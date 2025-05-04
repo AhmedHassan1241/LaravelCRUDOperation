@@ -1,0 +1,124 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Category;
+use App\Models\Products;
+use Illuminate\Http\Request;
+
+class ProductsController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        //
+        // $products = Products::all();
+        // return view('Products.index', compact('products'));
+
+        $categories= Category::all();
+        // $query = Products::query();
+        if (($request->has('search') && $request->search != '')) {
+            $query->where('name', 'LIKE', "%{$request->search}%");
+        }
+        if (($request->has('price') && $request->price != '')) {
+            $query->where('price', '=', $request->price);
+        }
+
+        if(($request->has('category')&&$request->category!='')){
+            $categSearch = Category::where('name','like',$request->category)->first();
+        if($categSearch){
+              $query->where('category_id','=',value: $categSearch->id);
+            }else{
+                $query->whereRaw('0 = 1');
+            }
+        }
+
+
+        $products = $query->get();
+
+        return view('Products.index', compact('products','categories'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+        $categories = Category::all();
+        return view('products.create', compact('categories'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        //
+        $validate = $request->validate([
+            'name' => 'required',
+            'price' => 'required',
+            'category_id' => 'required',
+            'description' => 'required'
+
+        ]);
+        Products::create($validate);
+        // Products::create([
+        //     'name' => $request->name,
+        //     'price' => $request->price,
+        //     'category_id' => $request->category_id,
+        //     'description' => $request->description,
+        // ]);
+        return redirect()->route('products.index');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Products $product)
+    {
+        //
+        $category = Category::find($product->category_id);
+        return view('Products.show', compact('product','category'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Products $product)
+    {
+        //
+        $categories = Category::all();
+        return view('products.edit', compact('categories','product'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Products $product)
+    {
+        //
+        $validate = $request->validate([
+            'name' => 'required',
+            'price' => 'required',
+            'category_id' => 'required',
+            'description' => 'required'
+        ]);
+
+        $product->update($validate);
+
+        return redirect()->route('products.index');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Products $product)
+    {
+        //
+        $product->delete();
+        return redirect()->route('products.index');
+    }
+}
