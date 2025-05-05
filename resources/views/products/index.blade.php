@@ -39,6 +39,7 @@
                 </p> --}}
                 <p>Category : {{$product->category->name}}</p>
                 <p>Description : {{ $product->description }}</p>
+                <p>User Id : {{ $product->user_id }}</p>
                 @if($product->image)
                 <img src="{{ asset('storage/' . $product->image) }}" width="400">
                 <br>

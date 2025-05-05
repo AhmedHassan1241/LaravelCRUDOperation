@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Products;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ProductsController extends Controller
@@ -111,15 +112,10 @@ class ProductsController extends Controller
             $validate['image']=$path;
         }
 
-        // $validate['user_id']=auth()->id();
+        $product = new Products($validate);
+        $product->user_id = auth()->id();
+        $product->save();
 
-        Products::create($validate);
-        // Products::create([
-        //     'name' => $request->name,
-        //     'price' => $request->price,
-        //     'category_id' => $request->category_id,
-        //     'description' => $request->description,
-        // ]);
         return redirect()->route('products.index');
     }
 
@@ -140,7 +136,8 @@ class ProductsController extends Controller
     {
         //
         $categories = Category::all();
-        return view('products.edit', compact('categories', 'product'));
+        $users = User::all();
+        return view('products.edit', compact('categories', 'product','users'));
     }
 
     /**
@@ -168,6 +165,11 @@ class ProductsController extends Controller
                 unlink(storage_path('app/public/' . $product->image));
             }
         }
+        if ($request->has('user_id')) {
+            # code...
+            $validate['user_id']=$request->user_id;
+        }
+
         $product->update($validate);
 
         return redirect()->route('products.index');
